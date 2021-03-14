@@ -51,11 +51,25 @@
         var: out3
 
 - name: "Play 3 docker stack deploy"
-  hosts: docker-master
+  hosts: docker-manager
   become: yes
   tasks:
-    - name: stop the stack
-      shell: docker stack rm trainingwale
-
-    - name: start the stack
-      shell: docker stack deploy --compose-file /opt/docker/trainingwale/trainingwale.yml trainingwale
+    - name: Remove stack
+      docker_stack:
+        name: trainingwale
+        state: absent
+      tags: docker-stack-remove
+      
+    - name: sleep for 10 sec
+      shell: sleep 10
+      
+    - name: Deploy stack from a compose file
+      docker_stack:
+        state: present
+        name: mystack
+        compose:
+          - /tmp/training-com/trainingwale.yml
+      register: out6
+      tags: docker-stack-deploy
+    - debug:
+        var: out6
